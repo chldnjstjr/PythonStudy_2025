@@ -1,0 +1,14 @@
+body {
+  font-family: 'Pretendard', 'Noto Sans KR', Arial, sans-serif;
+  font-size: 1.1em;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Pretendard', 'Noto Sans KR', Arial, sans-serif;
+  font-weight: 700;
+}
+
+code, pre {
+  font-family: 'Fira Mono', 'Consolas', 'Menlo', 'Monaco', monospace;
+  font-size: 1em;
+}
