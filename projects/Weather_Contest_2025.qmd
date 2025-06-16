@@ -1,0 +1,246 @@
+---
+title: "2025 날씨 빅데이터 콘테스트: 기상과 지하철 혼잡도 분석"
+author: "최원석"
+date: today
+format: 
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 2
+    code-fold: true
+    code-tools: true
+    smooth-scroll: true
+    number-sections: true
+    fig-cap-location: top
+    link-external-icon: true
+    link-external-newwindow: true
+    highlight-style: github
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+::: {.callout-note title="문서 다운로드"}
+아래 버튼을 클릭하여 원하는 형식으로 문서를 다운로드할 수 있습니다.
+
+-   [HTML로 다운로드]
+-   [PDF로 다운로드]
+-   [Word로 다운로드]
+:::
+
+  [HTML로 다운로드]: Weather_Contest_2025.html {.btn .btn-primary}
+  [PDF로 다운로드]: Weather_Contest_2025.pdf {.btn .btn-danger}
+  [Word로 다운로드]: Weather_Contest_2025.docx {.btn .btn-info}
+
+# 프로젝트 개요
+
+## 콘테스트 배경
+
+본 분석은 기상청이 주최하는 "2025 날씨 빅데이터 콘테스트"의 일환으로, 기상과 교통이라는 두 사회적 요인을 융합 분석하여 실생활에 적용 가능한 인사이트를 도출하는 데 목적이 있음. 특히, 지하철 혼잡도는 많은 시민들의 일상에 영향을 미치며, 기상에 따라 변화할 가능성이 있다는 전제하에 출발함.
+
+## 목표 및 기대효과
+
+이 프로젝트는 날씨와 대중교통의 관계를 정량적으로 분석하고, 예측 가능한 모델로 정형화함으로써 정책적 활용성과 서비스 운영 개선 가능성을 제시함. 향후 기상에 따른 지하철 수요 대응 전략 및 대중교통 유연화 정책에 기여할 수 있는 기초자료 제공이 기대됨.
+
+## 평가 기준 및 구성
+
+-   데이터 이해도 (10점): 데이터 구조 및 변수 이해 수준 평가
+-   데이터 분석 능력 (40점): 정리, 전처리, EDA의 깊이와 논리성
+-   모델 정확도 및 활용성 (50점): 예측 모델의 성능, 해석력, 활용 전략 포함
+
+# 데이터
+
+## 데이터 출처 및 설명
+
+### 기상 데이터(AWS, ASOS, 객관분석)
+
+기상 정보는 방재기상관측(AWS), 종관기상관측(ASOS), 객관분석 체감온도 데이터를 포함하며, 온도, 강수, 바람, 습도 등 일상적인 기상 요소 외에도 지표면 일사량, 체감온도와 같은 간접 기상지표도 포함함. 이는 단순 날씨보다는 체감 및 행동에 영향을 줄 수 있는 요소까지 포괄함.
+
+### 지하철 혼잡도
+
+서울 1\~8호선의 각 시간대별 열차 내 혼잡도(%)를 기록한 데이터이며, 혼잡도는 '실제 탑승 인원 / 기준 탑승 인원 \* 100'으로 계산됨. AWS 지점코드를 통해 해당 역과 가까운 기상 측정소의 데이터를 연결함.
+
+## 데이터 스키마
+
+### train_subway21\~3
+
+|                |                                               |
+|----------------|-----------------------------------------------|
+| train_subway21 | 2021년 서울 지하철 혼잡도 및 기상 결합 데이터 |
+| train_subway22 | 동일                                          |
+| train_subway23 | 동일                                          |
+
+### 칼럼 정의 및 단위
+
+| 칼럼명         | 설명          | 단위     |
+|----------------|---------------|----------|
+| tm             | 날짜 및 시각  | datetime |
+| line           | 지하철 호선   | string   |
+| station_number | 역 번호       | int      |
+| station_name   | 역 이름       | string   |
+| direction      | 상/하행 구분  | string   |
+| stn            | AWS 지점 코드 | string   |
+| ta             | 기온          | ℃        |
+| wd             | 풍향          | degree   |
+| ws             | 풍속          | m/s      |
+| rn_day         | 일 강수량     | mm       |
+| rn_hr1         | 1시간 강수량  | mm       |
+| hm             | 상대습도      | \%       |
+| si             | 일사량(ASOS)  | W/m²     |
+| ta_chi         | 체감온도      | ℃        |
+| congestion     | 혼잡도        | \%       |
+
+## 데이터 특성 및 제약사항
+
+### 관측 지점별 가용성
+
+기상관측소는 AWS와 ASOS 두 체계로 구성되며, 역과의 거리 차이에 따라 측정값의 실제 반영도에 차이가 발생할 수 있음. 지하철역과 가장 인접한 AWS 지점 매핑이 중요한 선행 작업임.
+
+### 개통 이후 데이터 누락
+
+일부 역은 2021년 이후에 개통되어 해당 연도에는 데이터가 없음.
+
+이로 인해 분석 시계열 불균형이나 결측구간 발생 가능성 존재함.
+
+### 시간대 및 계절 편향
+
+지하철 운행시간(약 5시~24시) 기준으로 시간대 편중 존재.
+
+또한 계쩔별 승객 수 차이, 방학 및 휴가철, 장마 및 폭염기간 등 다양한 외부요인이 개입됨.
+
+# 데이터 파악 및 전처리
+
+## 데이터 로딩 및 통합
+
+- 라이브러리 
+
+```{python}
+# 모든 코드 줄의 결과를 자동 출력
+from IPython.core.interactiveshell import InteractiveShell
+InteractiveShell.ast_node_interactivity = "all"
+```
+
+```{python}
+import pandas as pd
+```
+
+```{python}
+# 데이터 불러오기 (uf-8 인코딩으로 읽기)
+subway_data21 = pd.read_csv('C:/Users/wschoi/Downloads/train_subway21.csv', encoding='utf-8')
+subway_data22 = pd.read_csv('C:/Users/wschoi/Downloads/train_subway22.csv', encoding='utf-8')
+subway_data23 = pd.read_csv('C:/Users/wschoi/Downloads/train_subway23.csv', encoding='utf-8')
+
+# Combine data
+subway_data = pd.concat([subway_data21, subway_data22, subway_data23], axis=0)
+```
+
+## 결측치 및 이상치 처리
+
+### 결측치 분포 분석
+
+```{python}
+# Check for missing values
+missing_data = subway_data.isnull().sum()
+missing_data = missing_data[missing_data > 0]
+print(missing_data)
+```
+
+```{python}
+# 결측치 비율 확인
+missing_data = subway_data.isnull().mean() * 100
+print(missing_data)
+```
+
+### 보간 및 대체 전략
+
+```{python}
+subway_data['ta'] = subway_data['ta'].interpolate(method='linear')
+```
+
+## 시간 변수 처리
+
+```{python}
+#구조 보기 
+subway_data.info()
+```
+
+### Datetime 변환
+
+### 요일, 출퇴근구간, 휴일 파생 변수
+
+## 데이터 병합 및 정렬
+
+### 기상-지하철 데이터 결합
+
+### 인덱스 설정 및 정렬
+
+
+# EDA
+
+## 기본 통계 요약
+
+## 시각화 흐름
+
+### 시간대별 혼잡도 트렌드
+
+### 요일/계절별 패턴
+
+### 역별 상이성 분석
+
+## 상관관계 분석
+
+### 기상 변수 상관계수
+
+### 혼잡도 주요 영향 요인
+
+
+# 모델링 및 예측
+
+## 모델링 전략
+
+### 시계열 모델 vs. 회귀 모델
+
+### 머신러닝 모델 후보군
+
+## 특징 선택 및 엔지니어링
+
+### 변수 중요도 사전 분석
+
+### 상호작용 항 생성
+
+## 모델 학습
+
+### 학습/검증 데이터 분할
+
+### 하이퍼파라미터 튜닝
+
+## 성능 평가
+
+### RMSE 계산
+
+### 오버피팅 검토
+
+
+# 시각화 및 결과
+
+## 예측 vs. 실제 혼잡도 비교
+
+## 주요 설명 변수 시각화
+
+## 지하철 노선별 예측 성능
+
+# 인사이트 및 제언
+
+## 기상 영향 요인 요약
+
+## 운영 정책 제안
+
+## 향후 연구 방향
+
+
+# 부록
+
+## 코드 스니펫
+
+## 추가 그래프 및 테이블

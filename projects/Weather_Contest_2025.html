@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.31">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="최원석">
+<meta name="dcterms.date" content="2025-06-16">
+
+<title>2025 날씨 빅데이터 콘테스트: 기상과 지하철 혼잡도 분석</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="Weather_Contest_2025_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Weather_Contest_2025_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="Weather_Contest_2025_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="Weather_Contest_2025_files/libs/quarto-html/popper.min.js"></script>
+<script src="Weather_Contest_2025_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="Weather_Contest_2025_files/libs/quarto-html/anchor.min.js"></script>
+<link href="Weather_Contest_2025_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Weather_Contest_2025_files/libs/quarto-html/quarto-syntax-highlighting-4a990d8dcb58f517c7c86712b8f2ac7c.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="Weather_Contest_2025_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="Weather_Contest_2025_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="Weather_Contest_2025_files/libs/bootstrap/bootstrap-e52c317b831d71bd0833fd401c29266f.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<style>html{ scroll-behavior: smooth; }</style>
+
+
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul class="collapse">
+  <li><a href="#프로젝트-개요" id="toc-프로젝트-개요" class="nav-link active" data-scroll-target="#프로젝트-개요"><span class="header-section-number">1</span> 프로젝트 개요</a>
+  <ul class="collapse">
+  <li><a href="#콘테스트-배경" id="toc-콘테스트-배경" class="nav-link" data-scroll-target="#콘테스트-배경"><span class="header-section-number">1.1</span> 콘테스트 배경</a></li>
+  <li><a href="#목표-및-기대효과" id="toc-목표-및-기대효과" class="nav-link" data-scroll-target="#목표-및-기대효과"><span class="header-section-number">1.2</span> 목표 및 기대효과</a></li>
+  <li><a href="#평가-기준-및-구성" id="toc-평가-기준-및-구성" class="nav-link" data-scroll-target="#평가-기준-및-구성"><span class="header-section-number">1.3</span> 평가 기준 및 구성</a></li>
+  </ul></li>
+  <li><a href="#데이터" id="toc-데이터" class="nav-link" data-scroll-target="#데이터"><span class="header-section-number">2</span> 데이터</a>
+  <ul class="collapse">
+  <li><a href="#데이터-출처-및-설명" id="toc-데이터-출처-및-설명" class="nav-link" data-scroll-target="#데이터-출처-및-설명"><span class="header-section-number">2.1</span> 데이터 출처 및 설명</a></li>
+  <li><a href="#데이터-스키마" id="toc-데이터-스키마" class="nav-link" data-scroll-target="#데이터-스키마"><span class="header-section-number">2.2</span> 데이터 스키마</a></li>
+  <li><a href="#데이터-특성-및-제약사항" id="toc-데이터-특성-및-제약사항" class="nav-link" data-scroll-target="#데이터-특성-및-제약사항"><span class="header-section-number">2.3</span> 데이터 특성 및 제약사항</a></li>
+  </ul></li>
+  <li><a href="#데이터-파악-및-전처리" id="toc-데이터-파악-및-전처리" class="nav-link" data-scroll-target="#데이터-파악-및-전처리"><span class="header-section-number">3</span> 데이터 파악 및 전처리</a>
+  <ul class="collapse">
+  <li><a href="#데이터-로딩-및-통합" id="toc-데이터-로딩-및-통합" class="nav-link" data-scroll-target="#데이터-로딩-및-통합"><span class="header-section-number">3.1</span> 데이터 로딩 및 통합</a></li>
+  <li><a href="#결측치-및-이상치-처리" id="toc-결측치-및-이상치-처리" class="nav-link" data-scroll-target="#결측치-및-이상치-처리"><span class="header-section-number">3.2</span> 결측치 및 이상치 처리</a></li>
+  <li><a href="#시간-변수-처리" id="toc-시간-변수-처리" class="nav-link" data-scroll-target="#시간-변수-처리"><span class="header-section-number">3.3</span> 시간 변수 처리</a></li>
+  <li><a href="#데이터-병합-및-정렬" id="toc-데이터-병합-및-정렬" class="nav-link" data-scroll-target="#데이터-병합-및-정렬"><span class="header-section-number">3.4</span> 데이터 병합 및 정렬</a></li>
+  </ul></li>
+  <li><a href="#eda" id="toc-eda" class="nav-link" data-scroll-target="#eda"><span class="header-section-number">4</span> EDA</a>
+  <ul class="collapse">
+  <li><a href="#기본-통계-요약" id="toc-기본-통계-요약" class="nav-link" data-scroll-target="#기본-통계-요약"><span class="header-section-number">4.1</span> 기본 통계 요약</a></li>
+  <li><a href="#시각화-흐름" id="toc-시각화-흐름" class="nav-link" data-scroll-target="#시각화-흐름"><span class="header-section-number">4.2</span> 시각화 흐름</a></li>
+  <li><a href="#상관관계-분석" id="toc-상관관계-분석" class="nav-link" data-scroll-target="#상관관계-분석"><span class="header-section-number">4.3</span> 상관관계 분석</a></li>
+  </ul></li>
+  <li><a href="#모델링-및-예측" id="toc-모델링-및-예측" class="nav-link" data-scroll-target="#모델링-및-예측"><span class="header-section-number">5</span> 모델링 및 예측</a>
+  <ul class="collapse">
+  <li><a href="#모델링-전략" id="toc-모델링-전략" class="nav-link" data-scroll-target="#모델링-전략"><span class="header-section-number">5.1</span> 모델링 전략</a></li>
+  <li><a href="#특징-선택-및-엔지니어링" id="toc-특징-선택-및-엔지니어링" class="nav-link" data-scroll-target="#특징-선택-및-엔지니어링"><span class="header-section-number">5.2</span> 특징 선택 및 엔지니어링</a></li>
+  <li><a href="#모델-학습" id="toc-모델-학습" class="nav-link" data-scroll-target="#모델-학습"><span class="header-section-number">5.3</span> 모델 학습</a></li>
+  <li><a href="#성능-평가" id="toc-성능-평가" class="nav-link" data-scroll-target="#성능-평가"><span class="header-section-number">5.4</span> 성능 평가</a></li>
+  </ul></li>
+  <li><a href="#시각화-및-결과" id="toc-시각화-및-결과" class="nav-link" data-scroll-target="#시각화-및-결과"><span class="header-section-number">6</span> 시각화 및 결과</a>
+  <ul class="collapse">
+  <li><a href="#예측-vs.-실제-혼잡도-비교" id="toc-예측-vs.-실제-혼잡도-비교" class="nav-link" data-scroll-target="#예측-vs.-실제-혼잡도-비교"><span class="header-section-number">6.1</span> 예측 vs.&nbsp;실제 혼잡도 비교</a></li>
+  <li><a href="#주요-설명-변수-시각화" id="toc-주요-설명-변수-시각화" class="nav-link" data-scroll-target="#주요-설명-변수-시각화"><span class="header-section-number">6.2</span> 주요 설명 변수 시각화</a></li>
+  <li><a href="#지하철-노선별-예측-성능" id="toc-지하철-노선별-예측-성능" class="nav-link" data-scroll-target="#지하철-노선별-예측-성능"><span class="header-section-number">6.3</span> 지하철 노선별 예측 성능</a></li>
+  </ul></li>
+  <li><a href="#인사이트-및-제언" id="toc-인사이트-및-제언" class="nav-link" data-scroll-target="#인사이트-및-제언"><span class="header-section-number">7</span> 인사이트 및 제언</a>
+  <ul class="collapse">
+  <li><a href="#기상-영향-요인-요약" id="toc-기상-영향-요인-요약" class="nav-link" data-scroll-target="#기상-영향-요인-요약"><span class="header-section-number">7.1</span> 기상 영향 요인 요약</a></li>
+  <li><a href="#운영-정책-제안" id="toc-운영-정책-제안" class="nav-link" data-scroll-target="#운영-정책-제안"><span class="header-section-number">7.2</span> 운영 정책 제안</a></li>
+  <li><a href="#향후-연구-방향" id="toc-향후-연구-방향" class="nav-link" data-scroll-target="#향후-연구-방향"><span class="header-section-number">7.3</span> 향후 연구 방향</a></li>
+  </ul></li>
+  <li><a href="#부록" id="toc-부록" class="nav-link" data-scroll-target="#부록"><span class="header-section-number">8</span> 부록</a>
+  <ul class="collapse">
+  <li><a href="#코드-스니펫" id="toc-코드-스니펫" class="nav-link" data-scroll-target="#코드-스니펫"><span class="header-section-number">8.1</span> 코드 스니펫</a></li>
+  <li><a href="#추가-그래프-및-테이블" id="toc-추가-그래프-및-테이블" class="nav-link" data-scroll-target="#추가-그래프-및-테이블"><span class="header-section-number">8.2</span> 추가 그래프 및 테이블</a></li>
+  </ul></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title">2025 날씨 빅데이터 콘테스트: 기상과 지하철 혼잡도 분석</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>최원석 </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">June 16, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="callout callout-style-default callout-note callout-titled" title="문서 다운로드">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+문서 다운로드
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>아래 버튼을 클릭하여 원하는 형식으로 문서를 다운로드할 수 있습니다.</p>
+<ul>
+<li><a href="Weather_Contest_2025.html" class="btn btn-primary">HTML로 다운로드</a></li>
+<li><a href="Weather_Contest_2025.pdf" class="btn btn-danger">PDF로 다운로드</a></li>
+<li><a href="Weather_Contest_2025.docx" class="btn btn-info">Word로 다운로드</a></li>
+</ul>
+</div>
+</div>
+<section id="프로젝트-개요" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> 프로젝트 개요</h1>
+<section id="콘테스트-배경" class="level2" data-number="1.1">
+<h2 data-number="1.1" class="anchored" data-anchor-id="콘테스트-배경"><span class="header-section-number">1.1</span> 콘테스트 배경</h2>
+<p>본 분석은 기상청이 주최하는 “2025 날씨 빅데이터 콘테스트”의 일환으로, 기상과 교통이라는 두 사회적 요인을 융합 분석하여 실생활에 적용 가능한 인사이트를 도출하는 데 목적이 있음. 특히, 지하철 혼잡도는 많은 시민들의 일상에 영향을 미치며, 기상에 따라 변화할 가능성이 있다는 전제하에 출발함.</p>
+</section>
+<section id="목표-및-기대효과" class="level2" data-number="1.2">
+<h2 data-number="1.2" class="anchored" data-anchor-id="목표-및-기대효과"><span class="header-section-number">1.2</span> 목표 및 기대효과</h2>
+<p>이 프로젝트는 날씨와 대중교통의 관계를 정량적으로 분석하고, 예측 가능한 모델로 정형화함으로써 정책적 활용성과 서비스 운영 개선 가능성을 제시함. 향후 기상에 따른 지하철 수요 대응 전략 및 대중교통 유연화 정책에 기여할 수 있는 기초자료 제공이 기대됨.</p>
+</section>
+<section id="평가-기준-및-구성" class="level2" data-number="1.3">
+<h2 data-number="1.3" class="anchored" data-anchor-id="평가-기준-및-구성"><span class="header-section-number">1.3</span> 평가 기준 및 구성</h2>
+<ul>
+<li>데이터 이해도 (10점): 데이터 구조 및 변수 이해 수준 평가</li>
+<li>데이터 분석 능력 (40점): 정리, 전처리, EDA의 깊이와 논리성</li>
+<li>모델 정확도 및 활용성 (50점): 예측 모델의 성능, 해석력, 활용 전략 포함</li>
+</ul>
+</section>
+</section>
+<section id="데이터" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> 데이터</h1>
+<section id="데이터-출처-및-설명" class="level2" data-number="2.1">
+<h2 data-number="2.1" class="anchored" data-anchor-id="데이터-출처-및-설명"><span class="header-section-number">2.1</span> 데이터 출처 및 설명</h2>
+<section id="기상-데이터aws-asos-객관분석" class="level3" data-number="2.1.1">
+<h3 data-number="2.1.1" class="anchored" data-anchor-id="기상-데이터aws-asos-객관분석"><span class="header-section-number">2.1.1</span> 기상 데이터(AWS, ASOS, 객관분석)</h3>
+<p>기상 정보는 방재기상관측(AWS), 종관기상관측(ASOS), 객관분석 체감온도 데이터를 포함하며, 온도, 강수, 바람, 습도 등 일상적인 기상 요소 외에도 지표면 일사량, 체감온도와 같은 간접 기상지표도 포함함. 이는 단순 날씨보다는 체감 및 행동에 영향을 줄 수 있는 요소까지 포괄함.</p>
+</section>
+<section id="지하철-혼잡도" class="level3" data-number="2.1.2">
+<h3 data-number="2.1.2" class="anchored" data-anchor-id="지하철-혼잡도"><span class="header-section-number">2.1.2</span> 지하철 혼잡도</h3>
+<p>서울 1~8호선의 각 시간대별 열차 내 혼잡도(%)를 기록한 데이터이며, 혼잡도는 ’실제 탑승 인원 / 기준 탑승 인원 * 100’으로 계산됨. AWS 지점코드를 통해 해당 역과 가까운 기상 측정소의 데이터를 연결함.</p>
+</section>
+</section>
+<section id="데이터-스키마" class="level2" data-number="2.2">
+<h2 data-number="2.2" class="anchored" data-anchor-id="데이터-스키마"><span class="header-section-number">2.2</span> 데이터 스키마</h2>
+<section id="train_subway213" class="level3" data-number="2.2.1">
+<h3 data-number="2.2.1" class="anchored" data-anchor-id="train_subway213"><span class="header-section-number">2.2.1</span> train_subway21~3</h3>
+<table class="caption-top table">
+<tbody>
+<tr class="odd">
+<td>train_subway21</td>
+<td>2021년 서울 지하철 혼잡도 및 기상 결합 데이터</td>
+</tr>
+<tr class="even">
+<td>train_subway22</td>
+<td>동일</td>
+</tr>
+<tr class="odd">
+<td>train_subway23</td>
+<td>동일</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="칼럼-정의-및-단위" class="level3" data-number="2.2.2">
+<h3 data-number="2.2.2" class="anchored" data-anchor-id="칼럼-정의-및-단위"><span class="header-section-number">2.2.2</span> 칼럼 정의 및 단위</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>칼럼명</th>
+<th>설명</th>
+<th>단위</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>tm</td>
+<td>날짜 및 시각</td>
+<td>datetime</td>
+</tr>
+<tr class="even">
+<td>line</td>
+<td>지하철 호선</td>
+<td>string</td>
+</tr>
+<tr class="odd">
+<td>station_number</td>
+<td>역 번호</td>
+<td>int</td>
+</tr>
+<tr class="even">
+<td>station_name</td>
+<td>역 이름</td>
+<td>string</td>
+</tr>
+<tr class="odd">
+<td>direction</td>
+<td>상/하행 구분</td>
+<td>string</td>
+</tr>
+<tr class="even">
+<td>stn</td>
+<td>AWS 지점 코드</td>
+<td>string</td>
+</tr>
+<tr class="odd">
+<td>ta</td>
+<td>기온</td>
+<td>℃</td>
+</tr>
+<tr class="even">
+<td>wd</td>
+<td>풍향</td>
+<td>degree</td>
+</tr>
+<tr class="odd">
+<td>ws</td>
+<td>풍속</td>
+<td>m/s</td>
+</tr>
+<tr class="even">
+<td>rn_day</td>
+<td>일 강수량</td>
+<td>mm</td>
+</tr>
+<tr class="odd">
+<td>rn_hr1</td>
+<td>1시간 강수량</td>
+<td>mm</td>
+</tr>
+<tr class="even">
+<td>hm</td>
+<td>상대습도</td>
+<td>%</td>
+</tr>
+<tr class="odd">
+<td>si</td>
+<td>일사량(ASOS)</td>
+<td>W/m²</td>
+</tr>
+<tr class="even">
+<td>ta_chi</td>
+<td>체감온도</td>
+<td>℃</td>
+</tr>
+<tr class="odd">
+<td>congestion</td>
+<td>혼잡도</td>
+<td>%</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="데이터-특성-및-제약사항" class="level2" data-number="2.3">
+<h2 data-number="2.3" class="anchored" data-anchor-id="데이터-특성-및-제약사항"><span class="header-section-number">2.3</span> 데이터 특성 및 제약사항</h2>
+<section id="관측-지점별-가용성" class="level3" data-number="2.3.1">
+<h3 data-number="2.3.1" class="anchored" data-anchor-id="관측-지점별-가용성"><span class="header-section-number">2.3.1</span> 관측 지점별 가용성</h3>
+<p>기상관측소는 AWS와 ASOS 두 체계로 구성되며, 역과의 거리 차이에 따라 측정값의 실제 반영도에 차이가 발생할 수 있음. 지하철역과 가장 인접한 AWS 지점 매핑이 중요한 선행 작업임.</p>
+</section>
+<section id="개통-이후-데이터-누락" class="level3" data-number="2.3.2">
+<h3 data-number="2.3.2" class="anchored" data-anchor-id="개통-이후-데이터-누락"><span class="header-section-number">2.3.2</span> 개통 이후 데이터 누락</h3>
+<p>일부 역은 2021년 이후에 개통되어 해당 연도에는 데이터가 없음.</p>
+<p>이로 인해 분석 시계열 불균형이나 결측구간 발생 가능성 존재함.</p>
+</section>
+<section id="시간대-및-계절-편향" class="level3" data-number="2.3.3">
+<h3 data-number="2.3.3" class="anchored" data-anchor-id="시간대-및-계절-편향"><span class="header-section-number">2.3.3</span> 시간대 및 계절 편향</h3>
+<p>지하철 운행시간(약 5시~24시) 기준으로 시간대 편중 존재.</p>
+<p>또한 계쩔별 승객 수 차이, 방학 및 휴가철, 장마 및 폭염기간 등 다양한 외부요인이 개입됨.</p>
+</section>
+</section>
+</section>
+<section id="데이터-파악-및-전처리" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> 데이터 파악 및 전처리</h1>
+<section id="데이터-로딩-및-통합" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="데이터-로딩-및-통합"><span class="header-section-number">3.1</span> 데이터 로딩 및 통합</h2>
+</section>
+<section id="결측치-및-이상치-처리" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="결측치-및-이상치-처리"><span class="header-section-number">3.2</span> 결측치 및 이상치 처리</h2>
+<section id="결측치-분포-분석" class="level3" data-number="3.2.1">
+<h3 data-number="3.2.1" class="anchored" data-anchor-id="결측치-분포-분석"><span class="header-section-number">3.2.1</span> 결측치 분포 분석</h3>
+</section>
+<section id="보간-및-대체-전략" class="level3" data-number="3.2.2">
+<h3 data-number="3.2.2" class="anchored" data-anchor-id="보간-및-대체-전략"><span class="header-section-number">3.2.2</span> 보간 및 대체 전략</h3>
+</section>
+</section>
+<section id="시간-변수-처리" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="시간-변수-처리"><span class="header-section-number">3.3</span> 시간 변수 처리</h2>
+<section id="datetime-변환" class="level3" data-number="3.3.1">
+<h3 data-number="3.3.1" class="anchored" data-anchor-id="datetime-변환"><span class="header-section-number">3.3.1</span> Datetime 변환</h3>
+</section>
+<section id="요일-출퇴근구간-휴일-파생-변수" class="level3" data-number="3.3.2">
+<h3 data-number="3.3.2" class="anchored" data-anchor-id="요일-출퇴근구간-휴일-파생-변수"><span class="header-section-number">3.3.2</span> 요일, 출퇴근구간, 휴일 파생 변수</h3>
+</section>
+</section>
+<section id="데이터-병합-및-정렬" class="level2" data-number="3.4">
+<h2 data-number="3.4" class="anchored" data-anchor-id="데이터-병합-및-정렬"><span class="header-section-number">3.4</span> 데이터 병합 및 정렬</h2>
+<section id="기상-지하철-데이터-결합" class="level3" data-number="3.4.1">
+<h3 data-number="3.4.1" class="anchored" data-anchor-id="기상-지하철-데이터-결합"><span class="header-section-number">3.4.1</span> 기상-지하철 데이터 결합</h3>
+</section>
+<section id="인덱스-설정-및-정렬" class="level3" data-number="3.4.2">
+<h3 data-number="3.4.2" class="anchored" data-anchor-id="인덱스-설정-및-정렬"><span class="header-section-number">3.4.2</span> 인덱스 설정 및 정렬</h3>
+</section>
+</section>
+</section>
+<section id="eda" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> EDA</h1>
+<section id="기본-통계-요약" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="기본-통계-요약"><span class="header-section-number">4.1</span> 기본 통계 요약</h2>
+</section>
+<section id="시각화-흐름" class="level2" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="시각화-흐름"><span class="header-section-number">4.2</span> 시각화 흐름</h2>
+<section id="시간대별-혼잡도-트렌드" class="level3" data-number="4.2.1">
+<h3 data-number="4.2.1" class="anchored" data-anchor-id="시간대별-혼잡도-트렌드"><span class="header-section-number">4.2.1</span> 시간대별 혼잡도 트렌드</h3>
+</section>
+<section id="요일계절별-패턴" class="level3" data-number="4.2.2">
+<h3 data-number="4.2.2" class="anchored" data-anchor-id="요일계절별-패턴"><span class="header-section-number">4.2.2</span> 요일/계절별 패턴</h3>
+</section>
+<section id="역별-상이성-분석" class="level3" data-number="4.2.3">
+<h3 data-number="4.2.3" class="anchored" data-anchor-id="역별-상이성-분석"><span class="header-section-number">4.2.3</span> 역별 상이성 분석</h3>
+</section>
+</section>
+<section id="상관관계-분석" class="level2" data-number="4.3">
+<h2 data-number="4.3" class="anchored" data-anchor-id="상관관계-분석"><span class="header-section-number">4.3</span> 상관관계 분석</h2>
+<section id="기상-변수-상관계수" class="level3" data-number="4.3.1">
+<h3 data-number="4.3.1" class="anchored" data-anchor-id="기상-변수-상관계수"><span class="header-section-number">4.3.1</span> 기상 변수 상관계수</h3>
+</section>
+<section id="혼잡도-주요-영향-요인" class="level3" data-number="4.3.2">
+<h3 data-number="4.3.2" class="anchored" data-anchor-id="혼잡도-주요-영향-요인"><span class="header-section-number">4.3.2</span> 혼잡도 주요 영향 요인</h3>
+</section>
+</section>
+</section>
+<section id="모델링-및-예측" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> 모델링 및 예측</h1>
+<section id="모델링-전략" class="level2" data-number="5.1">
+<h2 data-number="5.1" class="anchored" data-anchor-id="모델링-전략"><span class="header-section-number">5.1</span> 모델링 전략</h2>
+<section id="시계열-모델-vs.-회귀-모델" class="level3" data-number="5.1.1">
+<h3 data-number="5.1.1" class="anchored" data-anchor-id="시계열-모델-vs.-회귀-모델"><span class="header-section-number">5.1.1</span> 시계열 모델 vs.&nbsp;회귀 모델</h3>
+</section>
+<section id="머신러닝-모델-후보군" class="level3" data-number="5.1.2">
+<h3 data-number="5.1.2" class="anchored" data-anchor-id="머신러닝-모델-후보군"><span class="header-section-number">5.1.2</span> 머신러닝 모델 후보군</h3>
+</section>
+</section>
+<section id="특징-선택-및-엔지니어링" class="level2" data-number="5.2">
+<h2 data-number="5.2" class="anchored" data-anchor-id="특징-선택-및-엔지니어링"><span class="header-section-number">5.2</span> 특징 선택 및 엔지니어링</h2>
+<section id="변수-중요도-사전-분석" class="level3" data-number="5.2.1">
+<h3 data-number="5.2.1" class="anchored" data-anchor-id="변수-중요도-사전-분석"><span class="header-section-number">5.2.1</span> 변수 중요도 사전 분석</h3>
+</section>
+<section id="상호작용-항-생성" class="level3" data-number="5.2.2">
+<h3 data-number="5.2.2" class="anchored" data-anchor-id="상호작용-항-생성"><span class="header-section-number">5.2.2</span> 상호작용 항 생성</h3>
+</section>
+</section>
+<section id="모델-학습" class="level2" data-number="5.3">
+<h2 data-number="5.3" class="anchored" data-anchor-id="모델-학습"><span class="header-section-number">5.3</span> 모델 학습</h2>
+<section id="학습검증-데이터-분할" class="level3" data-number="5.3.1">
+<h3 data-number="5.3.1" class="anchored" data-anchor-id="학습검증-데이터-분할"><span class="header-section-number">5.3.1</span> 학습/검증 데이터 분할</h3>
+</section>
+<section id="하이퍼파라미터-튜닝" class="level3" data-number="5.3.2">
+<h3 data-number="5.3.2" class="anchored" data-anchor-id="하이퍼파라미터-튜닝"><span class="header-section-number">5.3.2</span> 하이퍼파라미터 튜닝</h3>
+</section>
+</section>
+<section id="성능-평가" class="level2" data-number="5.4">
+<h2 data-number="5.4" class="anchored" data-anchor-id="성능-평가"><span class="header-section-number">5.4</span> 성능 평가</h2>
+<section id="rmse-계산" class="level3" data-number="5.4.1">
+<h3 data-number="5.4.1" class="anchored" data-anchor-id="rmse-계산"><span class="header-section-number">5.4.1</span> RMSE 계산</h3>
+</section>
+<section id="오버피팅-검토" class="level3" data-number="5.4.2">
+<h3 data-number="5.4.2" class="anchored" data-anchor-id="오버피팅-검토"><span class="header-section-number">5.4.2</span> 오버피팅 검토</h3>
+</section>
+</section>
+</section>
+<section id="시각화-및-결과" class="level1" data-number="6">
+<h1 data-number="6"><span class="header-section-number">6</span> 시각화 및 결과</h1>
+<section id="예측-vs.-실제-혼잡도-비교" class="level2" data-number="6.1">
+<h2 data-number="6.1" class="anchored" data-anchor-id="예측-vs.-실제-혼잡도-비교"><span class="header-section-number">6.1</span> 예측 vs.&nbsp;실제 혼잡도 비교</h2>
+</section>
+<section id="주요-설명-변수-시각화" class="level2" data-number="6.2">
+<h2 data-number="6.2" class="anchored" data-anchor-id="주요-설명-변수-시각화"><span class="header-section-number">6.2</span> 주요 설명 변수 시각화</h2>
+</section>
+<section id="지하철-노선별-예측-성능" class="level2" data-number="6.3">
+<h2 data-number="6.3" class="anchored" data-anchor-id="지하철-노선별-예측-성능"><span class="header-section-number">6.3</span> 지하철 노선별 예측 성능</h2>
+</section>
+</section>
+<section id="인사이트-및-제언" class="level1" data-number="7">
+<h1 data-number="7"><span class="header-section-number">7</span> 인사이트 및 제언</h1>
+<section id="기상-영향-요인-요약" class="level2" data-number="7.1">
+<h2 data-number="7.1" class="anchored" data-anchor-id="기상-영향-요인-요약"><span class="header-section-number">7.1</span> 기상 영향 요인 요약</h2>
+</section>
+<section id="운영-정책-제안" class="level2" data-number="7.2">
+<h2 data-number="7.2" class="anchored" data-anchor-id="운영-정책-제안"><span class="header-section-number">7.2</span> 운영 정책 제안</h2>
+</section>
+<section id="향후-연구-방향" class="level2" data-number="7.3">
+<h2 data-number="7.3" class="anchored" data-anchor-id="향후-연구-방향"><span class="header-section-number">7.3</span> 향후 연구 방향</h2>
+</section>
+</section>
+<section id="부록" class="level1" data-number="8">
+<h1 data-number="8"><span class="header-section-number">8</span> 부록</h1>
+<section id="코드-스니펫" class="level2" data-number="8.1">
+<h2 data-number="8.1" class="anchored" data-anchor-id="코드-스니펫"><span class="header-section-number">8.1</span> 코드 스니펫</h2>
+</section>
+<section id="추가-그래프-및-테이블" class="level2" data-number="8.2">
+<h2 data-number="8.2" class="anchored" data-anchor-id="추가-그래프-및-테이블"><span class="header-section-number">8.2</span> 추가 그래프 및 테이블</h2>
+<!-- -->
+
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+        for (let i=0; i<detailsSrc.length; i++) {
+          const details = detailsSrc[i].parentElement;
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+            // default icon
+            link.classList.add("external");
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="sourceCode" id="cb1" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "2025 날씨 빅데이터 콘테스트: 기상과 지하철 혼잡도 분석"</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="an">author:</span><span class="co"> "최원석"</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="an">date:</span><span class="co"> today</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span><span class="co"> </span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co">    theme: cosmo</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co">    toc: true</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="co">    toc-depth: 2</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co">    code-fold: true</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co">    code-tools: true</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="co">    smooth-scroll: true</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="co">    number-sections: true</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="co">    fig-cap-location: top</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="co">    link-external-icon: true</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="co">    link-external-newwindow: true</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="co">    highlight-style: github</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="an">execute:</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="co">  echo: true</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="co">  warning: false</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="co">  message: false</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>::: {.callout-note title="문서 다운로드"}</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>아래 버튼을 클릭하여 원하는 형식으로 문서를 다운로드할 수 있습니다.</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span><span class="co">[</span><span class="ot">HTML로 다운로드</span><span class="co">]</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span><span class="co">[</span><span class="ot">PDF로 다운로드</span><span class="co">]</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span><span class="co">[</span><span class="ot">Word로 다운로드</span><span class="co">]</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>  <span class="ot">[HTML로 다운로드]: </span>Weather_Contest_2025.html {.btn .btn-primary}</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>  <span class="ot">[PDF로 다운로드]: </span>Weather_Contest_2025.pdf {.btn .btn-danger}</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>  <span class="ot">[Word로 다운로드]: </span>Weather_Contest_2025.docx {.btn .btn-info}</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a><span class="fu"># 프로젝트 개요</span></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a><span class="fu">## 콘테스트 배경</span></span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>본 분석은 기상청이 주최하는 "2025 날씨 빅데이터 콘테스트"의 일환으로, 기상과 교통이라는 두 사회적 요인을 융합 분석하여 실생활에 적용 가능한 인사이트를 도출하는 데 목적이 있음. 특히, 지하철 혼잡도는 많은 시민들의 일상에 영향을 미치며, 기상에 따라 변화할 가능성이 있다는 전제하에 출발함.</span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a><span class="fu">## 목표 및 기대효과</span></span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>이 프로젝트는 날씨와 대중교통의 관계를 정량적으로 분석하고, 예측 가능한 모델로 정형화함으로써 정책적 활용성과 서비스 운영 개선 가능성을 제시함. 향후 기상에 따른 지하철 수요 대응 전략 및 대중교통 유연화 정책에 기여할 수 있는 기초자료 제공이 기대됨.</span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a><span class="fu">## 평가 기준 및 구성</span></span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>데이터 이해도 (10점): 데이터 구조 및 변수 이해 수준 평가</span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>데이터 분석 능력 (40점): 정리, 전처리, EDA의 깊이와 논리성</span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>모델 정확도 및 활용성 (50점): 예측 모델의 성능, 해석력, 활용 전략 포함</span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a><span class="fu"># 데이터</span></span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a><span class="fu">## 데이터 출처 및 설명</span></span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a><span class="fu">### 기상 데이터(AWS, ASOS, 객관분석)</span></span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a>기상 정보는 방재기상관측(AWS), 종관기상관측(ASOS), 객관분석 체감온도 데이터를 포함하며, 온도, 강수, 바람, 습도 등 일상적인 기상 요소 외에도 지표면 일사량, 체감온도와 같은 간접 기상지표도 포함함. 이는 단순 날씨보다는 체감 및 행동에 영향을 줄 수 있는 요소까지 포괄함.</span>
+<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a><span class="fu">### 지하철 혼잡도</span></span>
+<span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a>서울 1\~8호선의 각 시간대별 열차 내 혼잡도(%)를 기록한 데이터이며, 혼잡도는 '실제 탑승 인원 / 기준 탑승 인원 <span class="sc">\*</span> 100'으로 계산됨. AWS 지점코드를 통해 해당 역과 가까운 기상 측정소의 데이터를 연결함.</span>
+<span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-64"><a href="#cb1-64" aria-hidden="true" tabindex="-1"></a><span class="fu">## 데이터 스키마</span></span>
+<span id="cb1-65"><a href="#cb1-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-66"><a href="#cb1-66" aria-hidden="true" tabindex="-1"></a><span class="fu">### train_subway21\~3</span></span>
+<span id="cb1-67"><a href="#cb1-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-68"><a href="#cb1-68" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span>                <span class="pp">|</span>                                               <span class="pp">|</span></span>
+<span id="cb1-69"><a href="#cb1-69" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------------|-----------------------------------------------|</span></span>
+<span id="cb1-70"><a href="#cb1-70" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> train_subway21 <span class="pp">|</span> 2021년 서울 지하철 혼잡도 및 기상 결합 데이터 <span class="pp">|</span></span>
+<span id="cb1-71"><a href="#cb1-71" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> train_subway22 <span class="pp">|</span> 동일                                          <span class="pp">|</span></span>
+<span id="cb1-72"><a href="#cb1-72" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> train_subway23 <span class="pp">|</span> 동일                                          <span class="pp">|</span></span>
+<span id="cb1-73"><a href="#cb1-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-74"><a href="#cb1-74" aria-hidden="true" tabindex="-1"></a><span class="fu">### 칼럼 정의 및 단위</span></span>
+<span id="cb1-75"><a href="#cb1-75" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-76"><a href="#cb1-76" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 칼럼명         <span class="pp">|</span> 설명          <span class="pp">|</span> 단위     <span class="pp">|</span></span>
+<span id="cb1-77"><a href="#cb1-77" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------------|---------------|----------|</span></span>
+<span id="cb1-78"><a href="#cb1-78" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> tm             <span class="pp">|</span> 날짜 및 시각  <span class="pp">|</span> datetime <span class="pp">|</span></span>
+<span id="cb1-79"><a href="#cb1-79" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> line           <span class="pp">|</span> 지하철 호선   <span class="pp">|</span> string   <span class="pp">|</span></span>
+<span id="cb1-80"><a href="#cb1-80" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> station_number <span class="pp">|</span> 역 번호       <span class="pp">|</span> int      <span class="pp">|</span></span>
+<span id="cb1-81"><a href="#cb1-81" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> station_name   <span class="pp">|</span> 역 이름       <span class="pp">|</span> string   <span class="pp">|</span></span>
+<span id="cb1-82"><a href="#cb1-82" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> direction      <span class="pp">|</span> 상/하행 구분  <span class="pp">|</span> string   <span class="pp">|</span></span>
+<span id="cb1-83"><a href="#cb1-83" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> stn            <span class="pp">|</span> AWS 지점 코드 <span class="pp">|</span> string   <span class="pp">|</span></span>
+<span id="cb1-84"><a href="#cb1-84" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> ta             <span class="pp">|</span> 기온          <span class="pp">|</span> ℃        <span class="pp">|</span></span>
+<span id="cb1-85"><a href="#cb1-85" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> wd             <span class="pp">|</span> 풍향          <span class="pp">|</span> degree   <span class="pp">|</span></span>
+<span id="cb1-86"><a href="#cb1-86" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> ws             <span class="pp">|</span> 풍속          <span class="pp">|</span> m/s      <span class="pp">|</span></span>
+<span id="cb1-87"><a href="#cb1-87" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> rn_day         <span class="pp">|</span> 일 강수량     <span class="pp">|</span> mm       <span class="pp">|</span></span>
+<span id="cb1-88"><a href="#cb1-88" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> rn_hr1         <span class="pp">|</span> 1시간 강수량  <span class="pp">|</span> mm       <span class="pp">|</span></span>
+<span id="cb1-89"><a href="#cb1-89" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> hm             <span class="pp">|</span> 상대습도      <span class="pp">|</span> \%       <span class="pp">|</span></span>
+<span id="cb1-90"><a href="#cb1-90" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> si             <span class="pp">|</span> 일사량(ASOS)  <span class="pp">|</span> W/m²     <span class="pp">|</span></span>
+<span id="cb1-91"><a href="#cb1-91" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> ta_chi         <span class="pp">|</span> 체감온도      <span class="pp">|</span> ℃        <span class="pp">|</span></span>
+<span id="cb1-92"><a href="#cb1-92" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> congestion     <span class="pp">|</span> 혼잡도        <span class="pp">|</span> \%       <span class="pp">|</span></span>
+<span id="cb1-93"><a href="#cb1-93" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-94"><a href="#cb1-94" aria-hidden="true" tabindex="-1"></a><span class="fu">## 데이터 특성 및 제약사항</span></span>
+<span id="cb1-95"><a href="#cb1-95" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-96"><a href="#cb1-96" aria-hidden="true" tabindex="-1"></a><span class="fu">### 관측 지점별 가용성</span></span>
+<span id="cb1-97"><a href="#cb1-97" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-98"><a href="#cb1-98" aria-hidden="true" tabindex="-1"></a>기상관측소는 AWS와 ASOS 두 체계로 구성되며, 역과의 거리 차이에 따라 측정값의 실제 반영도에 차이가 발생할 수 있음. 지하철역과 가장 인접한 AWS 지점 매핑이 중요한 선행 작업임.</span>
+<span id="cb1-99"><a href="#cb1-99" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-100"><a href="#cb1-100" aria-hidden="true" tabindex="-1"></a><span class="fu">### 개통 이후 데이터 누락</span></span>
+<span id="cb1-101"><a href="#cb1-101" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-102"><a href="#cb1-102" aria-hidden="true" tabindex="-1"></a>일부 역은 2021년 이후에 개통되어 해당 연도에는 데이터가 없음.</span>
+<span id="cb1-103"><a href="#cb1-103" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-104"><a href="#cb1-104" aria-hidden="true" tabindex="-1"></a>이로 인해 분석 시계열 불균형이나 결측구간 발생 가능성 존재함.</span>
+<span id="cb1-105"><a href="#cb1-105" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-106"><a href="#cb1-106" aria-hidden="true" tabindex="-1"></a><span class="fu">### 시간대 및 계절 편향</span></span>
+<span id="cb1-107"><a href="#cb1-107" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-108"><a href="#cb1-108" aria-hidden="true" tabindex="-1"></a>지하철 운행시간(약 5시\~24시) 기준으로 시간대 편중 존재.</span>
+<span id="cb1-109"><a href="#cb1-109" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-110"><a href="#cb1-110" aria-hidden="true" tabindex="-1"></a>또한 계쩔별 승객 수 차이, 방학 및 휴가철, 장마 및 폭염기간 등 다양한 외부요인이 개입됨.</span>
+<span id="cb1-111"><a href="#cb1-111" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-112"><a href="#cb1-112" aria-hidden="true" tabindex="-1"></a><span class="fu"># 데이터 파악 및 전처리</span></span>
+<span id="cb1-113"><a href="#cb1-113" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-114"><a href="#cb1-114" aria-hidden="true" tabindex="-1"></a><span class="fu">## 데이터 로딩 및 통합</span></span>
+<span id="cb1-115"><a href="#cb1-115" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-116"><a href="#cb1-116" aria-hidden="true" tabindex="-1"></a><span class="fu">## 결측치 및 이상치 처리</span></span>
+<span id="cb1-117"><a href="#cb1-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-118"><a href="#cb1-118" aria-hidden="true" tabindex="-1"></a><span class="fu">### 결측치 분포 분석</span></span>
+<span id="cb1-119"><a href="#cb1-119" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-120"><a href="#cb1-120" aria-hidden="true" tabindex="-1"></a><span class="fu">### 보간 및 대체 전략</span></span>
+<span id="cb1-121"><a href="#cb1-121" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-122"><a href="#cb1-122" aria-hidden="true" tabindex="-1"></a><span class="fu">## 시간 변수 처리</span></span>
+<span id="cb1-123"><a href="#cb1-123" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-124"><a href="#cb1-124" aria-hidden="true" tabindex="-1"></a><span class="fu">### Datetime 변환</span></span>
+<span id="cb1-125"><a href="#cb1-125" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-126"><a href="#cb1-126" aria-hidden="true" tabindex="-1"></a><span class="fu">### 요일, 출퇴근구간, 휴일 파생 변수</span></span>
+<span id="cb1-127"><a href="#cb1-127" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-128"><a href="#cb1-128" aria-hidden="true" tabindex="-1"></a><span class="fu">## 데이터 병합 및 정렬</span></span>
+<span id="cb1-129"><a href="#cb1-129" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-130"><a href="#cb1-130" aria-hidden="true" tabindex="-1"></a><span class="fu">### 기상-지하철 데이터 결합</span></span>
+<span id="cb1-131"><a href="#cb1-131" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-132"><a href="#cb1-132" aria-hidden="true" tabindex="-1"></a><span class="fu">### 인덱스 설정 및 정렬</span></span>
+<span id="cb1-133"><a href="#cb1-133" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-134"><a href="#cb1-134" aria-hidden="true" tabindex="-1"></a><span class="fu"># EDA</span></span>
+<span id="cb1-135"><a href="#cb1-135" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-136"><a href="#cb1-136" aria-hidden="true" tabindex="-1"></a><span class="fu">## 기본 통계 요약</span></span>
+<span id="cb1-137"><a href="#cb1-137" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-138"><a href="#cb1-138" aria-hidden="true" tabindex="-1"></a><span class="fu">## 시각화 흐름</span></span>
+<span id="cb1-139"><a href="#cb1-139" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-140"><a href="#cb1-140" aria-hidden="true" tabindex="-1"></a><span class="fu">### 시간대별 혼잡도 트렌드</span></span>
+<span id="cb1-141"><a href="#cb1-141" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-142"><a href="#cb1-142" aria-hidden="true" tabindex="-1"></a><span class="fu">### 요일/계절별 패턴</span></span>
+<span id="cb1-143"><a href="#cb1-143" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-144"><a href="#cb1-144" aria-hidden="true" tabindex="-1"></a><span class="fu">### 역별 상이성 분석</span></span>
+<span id="cb1-145"><a href="#cb1-145" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-146"><a href="#cb1-146" aria-hidden="true" tabindex="-1"></a><span class="fu">## 상관관계 분석</span></span>
+<span id="cb1-147"><a href="#cb1-147" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-148"><a href="#cb1-148" aria-hidden="true" tabindex="-1"></a><span class="fu">### 기상 변수 상관계수</span></span>
+<span id="cb1-149"><a href="#cb1-149" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-150"><a href="#cb1-150" aria-hidden="true" tabindex="-1"></a><span class="fu">### 혼잡도 주요 영향 요인</span></span>
+<span id="cb1-151"><a href="#cb1-151" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-152"><a href="#cb1-152" aria-hidden="true" tabindex="-1"></a><span class="fu"># 모델링 및 예측</span></span>
+<span id="cb1-153"><a href="#cb1-153" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-154"><a href="#cb1-154" aria-hidden="true" tabindex="-1"></a><span class="fu">## 모델링 전략</span></span>
+<span id="cb1-155"><a href="#cb1-155" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-156"><a href="#cb1-156" aria-hidden="true" tabindex="-1"></a><span class="fu">### 시계열 모델 vs. 회귀 모델</span></span>
+<span id="cb1-157"><a href="#cb1-157" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-158"><a href="#cb1-158" aria-hidden="true" tabindex="-1"></a><span class="fu">### 머신러닝 모델 후보군</span></span>
+<span id="cb1-159"><a href="#cb1-159" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-160"><a href="#cb1-160" aria-hidden="true" tabindex="-1"></a><span class="fu">## 특징 선택 및 엔지니어링</span></span>
+<span id="cb1-161"><a href="#cb1-161" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-162"><a href="#cb1-162" aria-hidden="true" tabindex="-1"></a><span class="fu">### 변수 중요도 사전 분석</span></span>
+<span id="cb1-163"><a href="#cb1-163" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-164"><a href="#cb1-164" aria-hidden="true" tabindex="-1"></a><span class="fu">### 상호작용 항 생성</span></span>
+<span id="cb1-165"><a href="#cb1-165" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-166"><a href="#cb1-166" aria-hidden="true" tabindex="-1"></a><span class="fu">## 모델 학습</span></span>
+<span id="cb1-167"><a href="#cb1-167" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-168"><a href="#cb1-168" aria-hidden="true" tabindex="-1"></a><span class="fu">### 학습/검증 데이터 분할</span></span>
+<span id="cb1-169"><a href="#cb1-169" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-170"><a href="#cb1-170" aria-hidden="true" tabindex="-1"></a><span class="fu">### 하이퍼파라미터 튜닝</span></span>
+<span id="cb1-171"><a href="#cb1-171" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-172"><a href="#cb1-172" aria-hidden="true" tabindex="-1"></a><span class="fu">## 성능 평가</span></span>
+<span id="cb1-173"><a href="#cb1-173" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-174"><a href="#cb1-174" aria-hidden="true" tabindex="-1"></a><span class="fu">### RMSE 계산</span></span>
+<span id="cb1-175"><a href="#cb1-175" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-176"><a href="#cb1-176" aria-hidden="true" tabindex="-1"></a><span class="fu">### 오버피팅 검토</span></span>
+<span id="cb1-177"><a href="#cb1-177" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-178"><a href="#cb1-178" aria-hidden="true" tabindex="-1"></a><span class="fu"># 시각화 및 결과</span></span>
+<span id="cb1-179"><a href="#cb1-179" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-180"><a href="#cb1-180" aria-hidden="true" tabindex="-1"></a><span class="fu">## 예측 vs. 실제 혼잡도 비교</span></span>
+<span id="cb1-181"><a href="#cb1-181" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-182"><a href="#cb1-182" aria-hidden="true" tabindex="-1"></a><span class="fu">## 주요 설명 변수 시각화</span></span>
+<span id="cb1-183"><a href="#cb1-183" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-184"><a href="#cb1-184" aria-hidden="true" tabindex="-1"></a><span class="fu">## 지하철 노선별 예측 성능</span></span>
+<span id="cb1-185"><a href="#cb1-185" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-186"><a href="#cb1-186" aria-hidden="true" tabindex="-1"></a><span class="fu"># 인사이트 및 제언</span></span>
+<span id="cb1-187"><a href="#cb1-187" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-188"><a href="#cb1-188" aria-hidden="true" tabindex="-1"></a><span class="fu">## 기상 영향 요인 요약</span></span>
+<span id="cb1-189"><a href="#cb1-189" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-190"><a href="#cb1-190" aria-hidden="true" tabindex="-1"></a><span class="fu">## 운영 정책 제안</span></span>
+<span id="cb1-191"><a href="#cb1-191" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-192"><a href="#cb1-192" aria-hidden="true" tabindex="-1"></a><span class="fu">## 향후 연구 방향</span></span>
+<span id="cb1-193"><a href="#cb1-193" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-194"><a href="#cb1-194" aria-hidden="true" tabindex="-1"></a><span class="fu"># 부록</span></span>
+<span id="cb1-195"><a href="#cb1-195" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-196"><a href="#cb1-196" aria-hidden="true" tabindex="-1"></a><span class="fu">## 코드 스니펫</span></span>
+<span id="cb1-197"><a href="#cb1-197" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-198"><a href="#cb1-198" aria-hidden="true" tabindex="-1"></a><span class="fu">## 추가 그래프 및 테이블</span></span></code><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></pre></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+
+<script src="Weather_Contest_2025_files/libs/quarto-html/zenscroll-min.js"></script>
+</body></html>
