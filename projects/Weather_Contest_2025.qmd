@@ -135,6 +135,14 @@ subway_data23 = pd.read_csv('C:/Users/wschoi/Downloads/train_subway23.csv', enco
 subway_data = pd.concat([subway_data21, subway_data22, subway_data23], axis=0)
 ```
 
+```{python}
+# 통합데이터셋인 subway_data에서 "." 포함 앞에 문자 삭제
+subway_data.columns = subway_data.columns.str.replace(r'\..*', '', regex=True)
+
+# 데이터 구조 확인
+subway_data.info()
+```
+
 ## 결측치 및 이상치 처리
 
 ### 결측치 분포 분석
@@ -166,6 +174,24 @@ subway_data.info()
 ```
 
 ### Datetime 변환
+
+- tm' 칼럼은 YYYYMMDDHH 형식 
+```{python}
+# 문자열로 변환 후 datetime으로 변환
+subway_data['tm_str'] = subway_data['tm'].astype(str)
+
+# 슬라이스를 통해 연도, 월, 일, 시간을 분해 
+subway_data['year'] = subway_data['tm_str'].str.slice(0, 4).astype(int)
+subway_data['month'] = subway_data['tm_str'].str.slice(4, 6).astype(int)
+subway_data['day'] = subway_data['tm_str'].str.slice(6, 8).astype(int)
+subway_data['hour'] = subway_data['tm_str'].str.slice(8, 10).astype(int)
+
+# Pandas의 to_datetime을 사용하여 datetime 객체로 변환
+subway_data['datetime'] = pd.to_datetime(subway_data[['year', 'month', 'day', 'hour']].assign(minute=0, second=0))
+
+# 원본 'tm_str' 열 삭제
+subway_data.drop(columns=['tm', 'tm_str'], inplace=True)
+```
 
 ### 요일, 출퇴근구간, 휴일 파생 변수
 
@@ -244,3 +270,4 @@ subway_data.info()
 ## 코드 스니펫
 
 ## 추가 그래프 및 테이블
+
